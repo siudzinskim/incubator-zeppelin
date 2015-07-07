@@ -57,6 +57,12 @@
       <id>cloudera</id>
       <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
     </repository>
+    <repository>
+      <id>mapr-releases</id>
+      <url>http://repository.mapr.com/maven/</url>
+      <snapshots><enabled>false</enabled></snapshots>
+      <releases><enabled>true</enabled></releases>
+    </repository>
   </repositories>
 
   <dependencyManagement>
@@ -685,9 +691,10 @@
         <activeByDefault>false</activeByDefault>
       </activation>
       <properties>
-        <hadoop.version>2.3.0-mapr-4.0.0-FCS</hadoop.version>
-        <yarn.version>2.3.0-mapr-4.0.0-FCS</yarn.version>
-        <jets3t.version>0.7.1</jets3t.version>
+        <hadoop.version>2.4.1-mapr-1408</hadoop.version>
+        <yarn.version>2.4.1-mapr-1408</yarn.version>
+        <hbase.version>0.98.9-mapr-1503</hbase.version>
+        <zookeeper.version>3.4.5-mapr-1503</zookeeper.version>
       </properties>
       <dependencies>
         <dependency>
@@ -704,7 +711,7 @@
         <dependency>
           <groupId>org.apache.zookeeper</groupId>
           <artifactId>zookeeper</artifactId>
-          <version>3.4.5-mapr-1406</version>
+          <version>3.4.5-mapr-1503</version>
         </dependency>
       </dependencies>
     </profile>

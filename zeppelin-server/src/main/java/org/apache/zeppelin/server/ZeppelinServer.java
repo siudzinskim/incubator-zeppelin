@@ -56,6 +56,14 @@ import org.slf4j.LoggerFactory;
 
 import com.wordnik.swagger.jersey.config.JerseyJaxrsConfig;
 
+import org.eclipse.jetty.security.ConstraintMapping;
+import org.eclipse.jetty.security.ConstraintSecurityHandler;
+import org.eclipse.jetty.security.HashLoginService;
+import org.eclipse.jetty.security.SecurityHandler;
+import org.eclipse.jetty.security.authentication.BasicAuthenticator;
+import org.eclipse.jetty.util.security.Constraint;
+
+
 /**
  * Main class of Zeppelin.
  *
@@ -84,6 +92,8 @@ public class ZeppelinServer extends Application {
     jettyServer = setupJettyServer(conf);
     notebookServer = setupNotebookServer(conf);
 
+    SecurityHandler sch = basicAuth(conf.getRelativeDir("conf/realm.properties"));
+
     // REST api
     final ServletContextHandler restApi = setupRestApiContextHandler();
     /** NOTE: Swagger-core is included via the web.xml in zeppelin-web
@@ -101,6 +111,9 @@ public class ZeppelinServer extends Application {
     //contexts.setHandlers(new Handler[]{swagger, restApi, webApp, webAppSwagg});
     contexts.setHandlers(new Handler[]{swagger, restApi, webApp});
     jettyServer.setHandler(contexts);
+    if (sch != null) {
+      webApp.setSecurityHandler(sch);
+    }
 
     notebookServer.start();
     LOG.info("Start zeppelin server");
@@ -136,6 +149,37 @@ public class ZeppelinServer extends Application {
     jettyServer.join();
   }
 
+  
+  private static SecurityHandler basicAuth(String path) {
+    File realmFile = new File(path);
+    if (realmFile.isFile() == false) {
+      return null;
+    } else {
+      LOG.info("Read realm file " + path);
+    }
+
+    HashLoginService l = new HashLoginService("zeppelin realm", path);
+
+    Constraint constraint = new Constraint();
+    constraint.setName(Constraint.__BASIC_AUTH);
+    constraint.setRoles(new String[]{"user"});
+    constraint.setAuthenticate(true);
+
+    ConstraintMapping cm = new ConstraintMapping();
+    cm.setConstraint(constraint);
+    cm.setPathSpec("/*");
+
+    ConstraintSecurityHandler csh = new ConstraintSecurityHandler();
+    csh.setAuthenticator(new BasicAuthenticator());
+    csh.setRealmName("myrealm");
+    csh.addConstraintMapping(cm);
+    csh.setLoginService(l);
+
+    return csh;
+  }
+
+  
+  
   private static Server setupJettyServer(ZeppelinConfiguration conf)
       throws Exception {
 
